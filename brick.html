@@ -1,65 +1,79 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Grabbable Brick with Hand Tracking</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@xrweb/hand-tracking@0.10.2/build/xrhand-tracking.min.js"></script>
-  </head>
-  <body>
-    <a-scene xr-hand-tracking>
-      <a-sky color="#ECECEC"></a-sky>
+</head>
+<body>
+<a-scene xr-hand-tracking>
+    <a-sky color="#ECECEC"></a-sky>
 
-      <!-- Floor -->
-      <a-plane position="0 0 -1" rotation="-90 0 0" width="4" height="4" color="#7B8C7C"></a-plane>
-      
-      <!-- Table Surface -->
-      <a-box id="table-top" position="0 0.5 -2" rotation="0 0 0" width="1.5" height="0.1" depth="1" color="#8B4513"></a-box>
-      
-      <!-- Table Legs (Skinny Cylindrical) -->
-      <a-cylinder position="0.7 0.25 -1.7" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
-      <a-cylinder position="-0.7 0.25 -1.7" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
-      <a-cylinder position="0.7 0.25 -2.3" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
-      <a-cylinder position="-0.7 0.25 -2.3" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
+    <!-- Floor -->
+    <a-plane position="0 0 -1" rotation="-90 0 0" width="4" height="4" color="#7B8C7C"></a-plane>
 
-      <!-- Updated Brick on the Table -->
-      <a-box id="brick" position="0 0.65 -2" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222" grabbable gripdown="grabBrick" gripmove="moveBrick" gripup="releaseBrick"></a-box>
+    <!-- Table Surface -->
+    <a-box id="table-top" position="0 0.5 -2" rotation="0 0 0" width="1.5" height="0.1" depth="1" color="#8B4513"></a-box>
 
-      <script>
-        AFRAME.registerComponent('hand-tracking', {
-    init: function () {
-      // Initialize hand tracking.
-      this.el.sceneEl.addEventListener('handtrackingready', (e) => {
-        console.log('Hand tracking is ready!');
-      });
-    }
-  });
+    <!-- Table Legs (Skinny Cylindrical) -->
+    <a-cylinder position="0.7 0.25 -1.7" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
+    <a-cylinder position="-0.7 0.25 -1.7" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
+    <a-cylinder position="0.7 0.25 -2.3" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
+    <a-cylinder position="-0.7 0.25 -2.3" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
 
-  AFRAME.registerComponent('grabbable', {
-    init: function () {
-      this.el.addEventListener('gripdown', function (evt) {
-        console.log('Gripped down', evt.detail.hand);
-      });
-      function grabBrick(event) {
-          const grabbedHand = event.detail.hand;
-          const grabbedObject = event.target;
-          grabbedObject.setAttribute("grabbingHand", grabbedHand);
-        }
+    <!-- Updated Brick on the Table -->
+    <a-box id="brick" position="0 0.65 -2" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222"></a-box>
 
-        function moveBrick(event) {
-          const grabbedHand = event.detail.hand;
-          const grabbedObject = event.target;
-          const handPosition = grabbedHand.getPalmPosition();
-          grabbedObject.setAttribute("position", handPosition);
-        }
+    <script>
+        AFRAME.registerComponent('grabbable', {
+            init: function () {
+                this.el.addEventListener('gripdown', function (evt) {
+                    console.log('Gripped down', evt.detail.hand);
+                    // Implement grab logic here
+                });
+                // Implement additional logic for move and release
+            }
+        });
 
-        function releaseBrick(event) {
-          const grabbedObject = event.target;
-          grabbedObject.removeAttribute("grabbingHand");
-        }
-    }
-  });
-        
-      </script>
-    </a-scene>
-  </body>
+        // Teleportation component based on finger pointing
+        AFRAME.registerComponent('teleport-on-point', {
+            schema: {
+                hand: {type: 'selector'},
+                duration: {type: 'number', default: 5000} // Time in milliseconds to hold the point gesture
+            },
+            init: function () {
+                // Initial setup
+                this.pointing = false;
+                this.timer = null;
+                this.el.addEventListener('pointingstart', this.handlePointingStart.bind(this));
+                this.el.addEventListener('pointingstop', this.handlePointingStop.bind(this));
+            },
+            handlePointingStart: function () {
+                // Start pointing
+                if (!this.pointing) {
+                    this.pointing = true;
+                    this.timer = setTimeout(() => {
+                        this.teleportPlayer();
+                    }, this.data.duration);
+                }
+            },
+            handlePointingStop: function () {
+                // Stop pointing
+                if (this.pointing) {
+                    clearTimeout(this.timer);
+                    this.pointing = false;
+                }
+            },
+            teleportPlayer: function () {
+                // Teleport logic here
+                console.log('Teleporting player...');
+                // Example teleport, replace with actual implementation
+                this.el.setAttribute('position', {x: 1, y: 1, z: -3});
+            }
+        });
+
+        document.querySelector('#brick').setAttribute('grabbable', '');
+    </script>
+</a-scene>
+</body>
 </html>
