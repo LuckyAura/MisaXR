@@ -27,12 +27,11 @@
     <a-box id="brick" position="0 0.65 -3" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222"
         super-hands
         static-body
-        grabbable
-        constraint="maxGrabbers: 2; collisions: 0;">
+        grabbable>
     </a-box>
 
-    <!-- Controllers -->
-    <a-entity id="leftHand" laser-controls="hand: left" super-hands movement-controls="fly: true"></a-entity>
+    <!-- Controllers with Corrected Movement Controls -->
+    <a-entity id="leftHand" laser-controls="hand: left" super-hands movement-controls></a-entity>
     <a-entity id="rightHand" laser-controls="hand: right" super-hands></a-entity>
 
 </a-scene>
