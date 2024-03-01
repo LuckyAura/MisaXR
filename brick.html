@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Grabbable Brick with Controller Support</title>
-    <!-- Use the latest version of A-Frame to ensure the best support for WebXR features -->
+    <title>Enhanced VR Room</title>
+    <!-- Use the latest version of A-Frame for the best support -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <!-- Include aframe-extras for additional controls -->
+    <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.min.js"></script>
     <!-- Include super-hands for interaction -->
     <script src="https://unpkg.com/super-hands/dist/super-hands.min.js"></script>
 </head>
@@ -12,7 +14,7 @@
     <a-sky color="#ECECEC"></a-sky>
 
     <!-- Floor -->
-    <a-plane position="0 1 -5" rotation="-90 0 0" width="10" height="10" color="#7B8C7C"></a-plane>
+    <a-plane position="0 0.5 -5" rotation="-90 0 0" width="10" height="10" color="#7B8C7C"></a-plane>
 
     <!-- Walls -->
     <a-box position="0 3 -8" rotation="0 0 0" width="10" height="6" depth="0.2" color="#8B8589"></a-box> <!-- Back wall -->
@@ -24,8 +26,8 @@
     <a-box position="0 3 -7.9" rotation="0 0 0" width="4" height="2" depth="0.1" color="#87CEEB" material="opacity: 0.5;"></a-box>
 
     <!-- Potted Plant -->
-    <a-cylinder position="-3 0.5 -4" radius="0.5" height="1" color="#654321"></a-cylinder> <!-- Pot -->
-    <a-entity position="-3 1.5 -4">
+    <a-cylinder position="-3 1 -4" radius="0.5" height="1" color="#654321"></a-cylinder> <!-- Pot -->
+    <a-entity position="-3 2 -4">
         <a-cylinder radius="0.5" height="0.2" color="#228B22"></a-cylinder> <!-- Plant Base -->
         <a-cone position="0 0.5 0" radius-bottom="0.5" radius-top="0" height="1" color="#228B22"></a-cone> <!-- Plant Top -->
     </a-entity>
@@ -46,10 +48,14 @@
         grabbable>
     </a-box>
 
-    <!-- Controllers with Corrected Movement Controls -->
-    <a-entity id="leftHand" laser-controls="hand: left" super-hands movement-controls></a-entity>
-    <a-entity id="rightHand" laser-controls="hand: right" super-hands></a-entity>
+    <!-- Player entity for movement and camera -->
+    <a-entity id="player" position="0 0 0" movement-controls="controls:gamepad" look-controls>
+        <a-camera position="0 1.6 0"></a-camera>
+    </a-entity>
 
+    <!-- Controllers -->
+    <a-entity id="leftHand" laser-controls="hand: left" super-hands></a-entity>
+    <a-entity id="rightHand" laser-controls="hand: right" super-hands></a-entity>
 </a-scene>
 </body>
 </html>
