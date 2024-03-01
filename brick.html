@@ -25,7 +25,21 @@
       <a-box id="brick" position="0 0.65 -2" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222" grabbable gripdown="grabBrick" gripmove="moveBrick" gripup="releaseBrick"></a-box>
 
       <script>
-        function grabBrick(event) {
+        AFRAME.registerComponent('hand-tracking', {
+    init: function () {
+      // Initialize hand tracking.
+      this.el.sceneEl.addEventListener('handtrackingready', (e) => {
+        console.log('Hand tracking is ready!');
+      });
+    }
+  });
+
+  AFRAME.registerComponent('grabbable', {
+    init: function () {
+      this.el.addEventListener('gripdown', function (evt) {
+        console.log('Gripped down', evt.detail.hand);
+      });
+      function grabBrick(event) {
           const grabbedHand = event.detail.hand;
           const grabbedObject = event.target;
           grabbedObject.setAttribute("grabbingHand", grabbedHand);
@@ -42,6 +56,9 @@
           const grabbedObject = event.target;
           grabbedObject.removeAttribute("grabbingHand");
         }
+    }
+  });
+        
       </script>
     </a-scene>
   </body>
