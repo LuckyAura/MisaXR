@@ -24,9 +24,11 @@
     <!-- Brick on the Table -->
     <a-box id="brick" position="0 0.65 -3" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222"></a-box>
 
-    <!-- Hand entities for hand tracking -->
-    <a-entity hand-controls="hand: left; handModelStyle: highPoly;"></a-entity>
-    <a-entity hand-controls="hand: right; handModelStyle: highPoly;"></a-entity>
+    <!-- Updated to ensure the latest A-Frame version is used -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <!-- Hand tracking entities (Ensure compatibility and support) -->
+    <a-entity oculus-hand-controls="hand: left"></a-entity>
+    <a-entity oculus-hand-controls="hand: right"></a-entity>
 
 </a-scene>
 </body>
