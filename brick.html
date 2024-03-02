@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Enhanced VR Room</title>
-    <!-- Use the latest version of A-Frame for the best support -->
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <!-- Include aframe-extras for additional controls -->
+    <title>Grabbable Bricks!</title>
+    <!-- Update to the latest version of A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <!-- Update aframe-extras and super-hands to their latest versions as needed -->
     <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.min.js"></script>
-    <!-- Include super-hands for interaction -->
     <script src="https://unpkg.com/super-hands/dist/super-hands.min.js"></script>
 </head>
 <body>
@@ -48,12 +47,11 @@
         grabbable>
     </a-box>
 
-    <!-- Player entity for movement and camera -->
-    <a-entity id="player" position="0 0 0" movement-controls="controls:gamepad" look-controls>
+     <!-- Updated player and controller setup -->
+     <a-entity id="player" position="0 0 0" movement-controls="controls:gamepad" look-controls>
         <a-camera position="0 1.6 0"></a-camera>
     </a-entity>
 
-    <!-- Controllers -->
     <a-entity id="leftHand" laser-controls="hand: left" super-hands></a-entity>
     <a-entity id="rightHand" laser-controls="hand: right" super-hands></a-entity>
 </a-scene>
