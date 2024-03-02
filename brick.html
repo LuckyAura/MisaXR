@@ -4,8 +4,9 @@
     <title>Grabbable Bricks!</title>
     <!-- Update to the latest version of A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <!-- Update aframe-extras and super-hands to their latest versions as needed -->
+    <!-- Include aframe-extras for movement-controls -->
     <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.min.js"></script>
+    <!-- Include super-hands for interaction capabilities -->
     <script src="https://unpkg.com/super-hands/dist/super-hands.min.js"></script>
 </head>
 <body>
@@ -26,13 +27,13 @@
 
     <!-- Potted Plant -->
     <a-cylinder position="-3 1 -4" radius="0.5" height="1" color="#654321"></a-cylinder> <!-- Pot -->
-    <a-entity position="-3 1.2 -4">
+    <a-entity position="-3 1.5 -4">
         <a-cylinder radius="0.5" height="0.2" color="#228B22"></a-cylinder> <!-- Plant Base -->
         <a-cone position="0 0.5 0" radius-bottom="0.5" radius-top="0" height="1" color="#228B22"></a-cone> <!-- Plant Top -->
     </a-entity>
 
     <!-- Table Surface -->
-    <a-box position="0 1 -3" rotation="0 0 0" width="2" height="0.1" depth="1" color="#8B4513"></a-box>
+    <a-box position="0 1.2 -3" rotation="0 0 0" width="2" height="0.1" depth="1" color="#8B4513"></a-box>
 
     <!-- Table Legs -->
     <a-cylinder position="0.75 1 -2.75" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
@@ -42,21 +43,21 @@
 
     <!-- Brick on the Table -->
     <a-box id="brick" position="0 1.65 -3" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222"
-        super-hands
-        static-body
-        grabbable>
+           super-hands
+           static-body
+           grabbable>
     </a-box>
 
-     <!-- Updated player and controller setup -->
-     <a-entity id="rig"
-          movement-controls="controls: gamepad,keyboard"
-          position="0 0 0">
-  <a-camera position="0 1.6 0"></a-camera>
-</a-entity>
+    <!-- Camera, movement-controls, and controllers setup -->
+    <a-entity id="rig"
+              movement-controls="controls: gamepad,keyboard"
+              position="0 0 0">
+        <a-camera position="0 1.6 0"></a-camera>
+        <!-- Controllers are nested within the rig to move with the player -->
+        <a-entity id="leftHand" laser-controls="hand: left" super-hands></a-entity>
+        <a-entity id="rightHand" laser-controls="hand: right" super-hands></a-entity>
+    </a-entity>
 
-
-    <a-entity id="leftHand" laser-controls="hand: left" super-hands></a-entity>
-    <a-entity id="rightHand" laser-controls="hand: right" super-hands></a-entity>
 </a-scene>
 </body>
 </html>
