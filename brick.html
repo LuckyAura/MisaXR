@@ -26,7 +26,7 @@
     <a-box position="0 3 -7.9" rotation="0 0 0" width="4" height="2" depth="0.1" color="#87CEEB" material="opacity: 0.5;"></a-box>
 
     <!-- Potted Plant -->
-    <a-cylinder position="-3 1 -4" radius="0.5" height="1" color="#654321"></a-cylinder> <!-- Pot -->
+    <a-cylinder position="-3 1 -4" radius="0.6" height="1" color="#654321"></a-cylinder> <!-- Pot -->
     <a-entity position="-3 1.5 -4">
         <a-cylinder radius="0.5" height="0.2" color="#228B22"></a-cylinder> <!-- Plant Base -->
         <a-cone position="0 0.5 0" radius-bottom="0.5" radius-top="0" height="1" color="#228B22"></a-cone> <!-- Plant Top -->
@@ -41,22 +41,20 @@
     <a-cylinder position="0.75 1 -3.25" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
     <a-cylinder position="-0.75 1 -3.25" radius="0.05" height="0.5" color="#8B4513"></a-cylinder>
 
-    <!-- Brick on the Table, now with class="clickable" for raycaster targeting -->
-    <a-box id="brick" class="clickable" position="0 1.65 -3" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222"
-           super-hands
-           static-body
+    <!-- Brick with corrected setup for grabbable functionality -->
+    <a-box id="brick" position="0 1.65 -3" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222"
+           class="interactive"  
+           super-hands="colliderEvent: raycaster-intersected; colliderEventProperty: els; colliderEndEvent: raycaster-intersected-cleared; colliderEndEventProperty: els"
            grabbable>
     </a-box>
 
-    <!-- Camera, movement-controls, and controllers setup, now with raycaster -->
+    <!-- Camera and controllers setup with minor adjustments for clarity and functionality -->
     <a-entity id="rig"
-              movement-controls="controls: gamepad,keyboard"
+              movement-controls="controls: gamepad, keyboard"
               position="0 0 0">
-        <a-camera position="0 1.6 0"></a-camera>
-        <!-- Controllers are nested within the rig to move with the player -->
-        <!-- Added raycaster="objects: .clickable" to interact with objects having class="clickable" -->
-        <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .clickable" super-hands></a-entity>
-        <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .clickable" super-hands></a-entity>
+        <a-camera position="0 0 0"></a-camera>
+        <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .interactive" super-hands></a-entity>
+        <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .interactive" super-hands></a-entity>
     </a-entity>
 
 </a-scene>
