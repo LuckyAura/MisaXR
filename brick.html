@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Grabbable Bricks!</title>
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.min.js"></script>
-    <!-- Include the A-Frame Physics System library -->
-    <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system/dist/aframe-physics-system.min.js"></script>
-    <script src="https://unpkg.com/super-hands/dist/super-hands.min.js"></script>
-</head>
+    <head>
+        <title>Grabbable Bricks!</title>
+        <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+        <script src="https://unpkg.com/aframe-extras/dist/aframe-extras.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/MozillaReality/ammo.js@8bbc0ea/builds/ammo.wasm.js"></script>
+        <script src="https://unpkg.com/super-hands/dist/super-hands.min.js"></script>
+    </head>
 <body>
 <a-scene antialias="true" physics="debug: true;">
     <a-sky color="#ECECEC"></a-sky>
@@ -38,15 +37,15 @@
     <a-cylinder position="0.75 0.6 -3.25" radius="0.05" height="1.2" color="#8B4513" static-body></a-cylinder>
     <a-cylinder position="-0.75 0.6 -3.25" radius="0.05" height="1.2" color="#8B4513" static-body></a-cylinder>
 
-    <!-- Updated Brick entity -->
+    <!-- Updated Brick entity with physics -->
     <a-box id="brick" position="0 1.65 -3" rotation="0 0 0" width="0.3" height="0.15" depth="0.15" color="#B22222"
-           class="interactive"
-           dynamic-body
-           super-hands="colliderEvent: grab-start; colliderEventProperty: detail.hand; colliderEndEvent: grab-end; colliderEndEventProperty: detail.hand"
+           dynamic-body="type: dynamic"
+           ammo-shape="type: box"
+           super-hands
            grabbable>
     </a-box>
 
-    <!-- Camera and controllers setup, now correctly positioned -->
+    <!-- Camera and controllers setup, unchanged -->
     <a-entity id="rig"
               movement-controls="controls: gamepad, keyboard"
               position="0 0 0">
