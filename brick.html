@@ -62,14 +62,12 @@
 
 
     <!-- Camera and controllers setup, unchanged -->
-    <a-entity id="rig"
-              movement-controls="controls: gamepad, keyboard"
-              position="0 0 0">
+    <a-entity id="rig" custom-movement position="0 1.6 0">
         <a-camera position="0 0 0"></a-camera>
         <a-entity id="rhand" mixin="physics-hands" hand-controls="hand: right"></a-entity>
         <a-entity id="lhand" mixin="physics-hands" hand-controls="hand: left"></a-entity>
-
     </a-entity>
+    
     <script>
         AFRAME.registerComponent('phase-shift', {
             init: function () {
@@ -82,6 +80,55 @@
                 });
             }
         });
+        AFRAME.registerComponent('custom-movement', {
+    schema: {
+      speed: {type: 'number', default: 0.1}
+    },
+    init: function () {
+      window.addEventListener('keydown', (e) => {
+        switch(e.key) {
+          case 'ArrowUp':
+          case 'w':
+            this.moveForward();
+            break;
+          case 'ArrowDown':
+          case 's':
+            this.moveBackward();
+            break;
+          case 'ArrowLeft':
+          case 'a':
+            this.moveLeft();
+            break;
+          case 'ArrowRight':
+          case 'd':
+            this.moveRight();
+            break;
+        }
+      });
+    },
+    moveForward: function() {
+      const direction = new THREE.Vector3();
+      this.el.object3D.getWorldDirection(direction);
+      this.el.object3D.position.addScaledVector(direction, this.data.speed);
+    },
+    moveBackward: function() {
+      const direction = new THREE.Vector3();
+      this.el.object3D.getWorldDirection(direction);
+      this.el.object3D.position.addScaledVector(direction, -this.data.speed);
+    },
+    moveLeft: function() {
+      const direction = new THREE.Vector3();
+      this.el.object3D.getWorldDirection(direction);
+      direction.cross(this.el.object3D.up);
+      this.el.object3D.position.addScaledVector(direction, -this.data.speed);
+    },
+    moveRight: function() {
+      const direction = new THREE.Vector3();
+      this.el.object3D.getWorldDirection(direction);
+      direction.cross(this.el.object3D.up);
+      this.el.object3D.position.addScaledVector(direction, this.data.speed);
+    }
+  });
     </script>
     
 </a-scene>
