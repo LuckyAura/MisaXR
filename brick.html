@@ -131,35 +131,40 @@
     }
   });
   AFRAME.registerComponent('thumbstick-movement', {
-    schema: {
-      speed: {type: 'number', default: 0.05} // Adjust speed as necessary
-    },
-    init: function () {
-      this.el.addEventListener('thumbstickmoved', evt => {
-        if (!evt.detail) return;
-        
-        let direction = new THREE.Vector3();
-        let camEl = this.el.sceneEl.camera.el;
+  schema: {
+    speed: {type: 'number', default: 0.05}, // Adjust speed as necessary for movement
+    rotationSpeed: {type: 'number', default: 1.5} // Adjust speed as necessary for rotation
+  },
+  init: function () {
+    this.el.addEventListener('thumbstickmoved', evt => {
+      if (!evt.detail) return;
+      
+      let direction = new THREE.Vector3();
+      let camEl = this.el.sceneEl.camera.el;
 
-        // Get camera direction
-        camEl.object3D.getWorldDirection(direction);
-        direction.y = 0;
-        direction.normalize();
-        direction.multiplyScalar(evt.detail.y * this.data.speed);
+      // Get camera direction for forward/backward movement
+      camEl.object3D.getWorldDirection(direction);
+      direction.y = 0; // Ignore vertical component of the direction
+      direction.normalize().multiplyScalar(evt.detail.y * this.data.speed);
 
-        // Adjust for strafe movement based on thumbstick x-axis
-        let strafeDirection = new THREE.Vector3();
-        strafeDirection.crossVectors(direction, new THREE.Vector3(0, 1, 0));
-        strafeDirection.multiplyScalar(evt.detail.x * this.data.speed);
+      // Adjust for strafe movement based on thumbstick x-axis
+      let strafeDirection = new THREE.Vector3();
+      strafeDirection.crossVectors(direction, new THREE.Vector3(0, 1, 0)).multiplyScalar(evt.detail.x * this.data.speed);
+      direction.add(strafeDirection);
 
-        direction.add(strafeDirection);
+      // Move the rig
+      let rigEl = document.getElementById('rig');
+      rigEl.object3D.position.add(direction);
 
-        // Move the rig
-        let rigEl = document.getElementById('rig');
-        rigEl.object3D.position.add(direction);
-      });
-    }
-  });
+      // Optional: Add rotation based on the x-axis of the other thumbstick
+      // This assumes evt.detail.x is from the thumbstick designated for rotation
+      // Adjust evt.detail.x to match the correct thumbstick input for your setup
+      let rotation = evt.detail.x * this.data.rotationSpeed;
+      rigEl.object3D.rotateY(THREE.Math.degToRad(rotation));
+    });
+  }
+});
+
     </script>
     
 </a-scene>
