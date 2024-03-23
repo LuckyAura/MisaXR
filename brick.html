@@ -66,8 +66,12 @@
             <!-- Camera and controllers setup, unchanged -->
             <a-entity id="rig" custom-movement position="0 1 0">
                 <a-camera position="0 -1 0"></a-camera>
-                <a-entity id="rhand" hand-tracking-grab-controls="hand: right;"></a-entity>
-                <a-entity id="lhand" hand-tracking-grab-controls="hand: left;"></a-entity>
+                <a-entity id="rhand" hand-tracking-grab-controls="hand: right;">
+                  <a-entity id="rhand-laser" laser-pointer></a-entity>
+              </a-entity>
+              <a-entity id="lhand" hand-tracking-grab-controls="hand: left;">
+                  <a-entity id="lhand-laser" laser-pointer></a-entity>
+              </a-entity>
             </a-entity>
 
             <script>
@@ -180,6 +184,17 @@
                 AFRAME.registerComponent('teleport-target', {
     init: function () {
         const el = this.el;
+        const defaultColor = el.getAttribute('color');
+        const hoverColor = '#FFFF00';
+
+        el.addEventListener('raycaster-intersected', (evt) => {
+            el.setAttribute('color', hoverColor);
+        });
+
+        el.addEventListener('raycaster-intersected-cleared', (evt) => {
+            el.setAttribute('color', defaultColor);
+        });
+
         const handControls = document.querySelectorAll('[hand-tracking-grab-controls]');
 
         handControls.forEach(handControl => {
@@ -194,6 +209,38 @@
                     rig.object3D.position.copy(el.object3D.position);
                 }
             });
+        });
+    }
+});
+AFRAME.registerComponent('laser-pointer', {
+    schema: {
+        color: {type: 'color', default: '#FF0000'},
+        length: {type: 'number', default: 5},
+        width: {type: 'number', default: 0.01}
+    },
+    init: function () {
+        const el = this.el;
+        const data = this.data;
+
+        el.setAttribute('line', {
+            start: '0 0 0',
+            end: `0 0 -${data.length}`,
+            color: data.color,
+            opacity: 0.7,
+            visible: false
+        });
+        el.setAttribute('raycaster', {
+            objects: '[teleport-target]',
+            far: data.length,
+            showLine: false
+        });
+
+        el.addEventListener('raycaster-intersection', (evt) => {
+            el.setAttribute('line', 'visible', true);
+        });
+
+        el.addEventListener('raycaster-intersection-cleared', (evt) => {
+            el.setAttribute('line', 'visible', false);
         });
     }
 });
