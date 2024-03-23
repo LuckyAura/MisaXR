@@ -8,6 +8,177 @@
         <script src="https://unpkg.com/aframe-physics-extras/dist/aframe-physics-extras.min.js"></script>
     </head>
     <body>
+      <script>
+        function createTeleportGrid(numRows, numCols, spacing) {
+          const gridGroup = document.createElement('a-entity');
+
+          for (let row = 0; row < numRows; row++) {
+            for (let col = 0; col < numCols; col++) {
+              const x = (col - (numCols - 1) / 2) * spacing;
+              const z = (row - (numRows - 1) / 2) * spacing;
+
+              const sphere = document.createElement('a-sphere');
+              sphere.setAttribute('position', `${x} 0.1 ${z}`);
+              sphere.setAttribute('radius', 0.1);
+              sphere.setAttribute('color', '#7CFC00');
+              sphere.setAttribute('teleport-target', '');
+
+            gridGroup.appendChild(sphere);
+  }
+}
+
+return gridGroup;
+}
+        const grid = createTeleportGrid(10, 10, 0.5);
+        document.getElementById('teleport-grid').appendChild(grid);
+          AFRAME.registerComponent('custom-movement', {
+              schema: {
+                  speed: {type: 'number', default: 0.1}
+              },
+              init: function () {
+                  window.addEventListener('keydown', (e) => {
+                      switch(e.key) {
+                          case 'ArrowUp':
+                          case 'w':
+                              this.moveForward();
+                              break;
+                          case 'ArrowDown':
+                          case 's':
+                              this.moveBackward();
+                              break;
+                          case 'ArrowLeft':
+                          case 'a':
+                              this.moveLeft();
+                              break;
+                          case 'ArrowRight':
+                          case 'd':
+                              this.moveRight();
+                              break;
+                      }
+                  });
+              },
+              moveForward: function() {
+                  const direction = new THREE.Vector3();
+                  this.el.object3D.getWorldDirection(direction);
+                  this.el.object3D.position.addScaledVector(direction, this.data.speed);
+              },
+              moveBackward: function() {
+                  const direction = new THREE.Vector3();
+                  this.el.object3D.getWorldDirection(direction);
+                  this.el.object3D.position.addScaledVector(direction, -this.data.speed);
+              },
+              moveLeft: function() {
+                  const direction = new THREE.Vector3();
+                  this.el.object3D.getWorldDirection(direction);
+                  direction.cross(this.el.object3D.up);
+                  this.el.object3D.position.addScaledVector(direction, -this.data.speed);
+              },
+              moveRight: function() {
+                  const direction = new THREE.Vector3();
+                  this.el.object3D.getWorldDirection(direction);
+                  direction.cross(this.el.object3D.up);
+                  this.el.object3D.position.addScaledVector(direction, this.data.speed);
+              }
+          });
+          AFRAME.registerComponent('thumbstick-movement', {
+              schema: {
+                  speed: {type: 'number', default: 0.05}, // Adjust speed as necessary for movement
+                  rotationSpeed: {type: 'number', default: 1.5} // Adjust speed as necessary for rotation
+              },
+              init: function () {
+                  this.el.addEventListener('thumbstickmoved', evt => {
+                      if (!evt.detail) return;
+
+                      let direction = new THREE.Vector3();
+                      let camEl = this.el.sceneEl.camera.el;
+
+                      // Get camera direction for forward/backward movement
+                      camEl.object3D.getWorldDirection(direction);
+                      direction.y = 0; // Ignore vertical component of the direction
+                      direction.normalize().multiplyScalar(evt.detail.y * this.data.speed);
+
+                      // Adjust for strafe movement based on thumbstick x-axis
+                      let strafeDirection = new THREE.Vector3();
+                      strafeDirection.crossVectors(direction, new THREE.Vector3(0, 1, 0)).multiplyScalar(evt.detail.x * this.data.speed);
+                      direction.add(strafeDirection);
+
+                      // Move the rig
+                      let rigEl = document.getElementById('rig');
+                      rigEl.object3D.position.add(direction);
+
+                      // Optional: Add rotation based on the x-axis of the other thumbstick
+                      // This assumes evt.detail.x is from the thumbstick designated for rotation
+                      // Adjust evt.detail.x to match the correct thumbstick input for your setup
+                      let rotation = evt.detail.x * this.data.rotationSpeed;
+                      rigEl.object3D.rotateY(THREE.Math.degToRad(rotation));
+                  });
+              }
+          });
+          
+          AFRAME.registerComponent('teleport-target', {
+init: function () {
+  const el = this.el;
+  const defaultColor = el.getAttribute('color');
+  const hoverColor = '#FFFF00';
+
+  el.addEventListener('raycaster-intersected', (evt) => {
+      el.setAttribute('color', hoverColor);
+  });
+
+  el.addEventListener('raycaster-intersected-cleared', (evt) => {
+      el.setAttribute('color', defaultColor);
+  });
+
+  const handControls = document.querySelectorAll('[hand-tracking-grab-controls]');
+
+  handControls.forEach(handControl => {
+      handControl.addEventListener('grip-start', () => {
+          const hand = handControl.object3D;
+          const raycaster = new THREE.Raycaster();
+          raycaster.setFromCamera(new THREE.Vector2(0, 0), handControl.el.sceneEl.camera);
+
+          const intersects = raycaster.intersectObjects([el.object3D]);
+          if (intersects.length > 0) {
+              const rig = document.getElementById('rig');
+              rig.object3D.position.copy(el.object3D.position);
+          }
+      });
+  });
+}
+});
+AFRAME.registerComponent('laser-pointer', {
+schema: {
+  color: {type: 'color', default: '#FF0000'},
+  length: {type: 'number', default: 5},
+  width: {type: 'number', default: 0.01}
+},
+init: function () {
+  const el = this.el;
+  const data = this.data;
+
+  el.setAttribute('line', {
+      start: '0 0 0',
+      end: `0 0 -${data.length}`,
+      color: data.color,
+      opacity: 0.7,
+      visible: true
+  });
+  el.setAttribute('raycaster', {
+      objects: '[teleport-target]',
+      far: data.length,
+      showLine: true
+  });
+
+  el.addEventListener('raycaster-intersection', (evt) => {
+      el.setAttribute('line', 'visible', true);
+  });
+
+  el.addEventListener('raycaster-intersection-cleared', (evt) => {
+      el.setAttribute('line', 'visible', false);
+  });
+}
+});
+      </script>
         <a-scene physics obb-collider="showColliders: true">
             <a-sky src="https://luckyaura.github.io/MisaXR/2374445845_3b2e8c9e8e_o.jpg"></a-sky>
 
@@ -67,184 +238,14 @@
             <a-entity id="rig" custom-movement position="0 1 0">
                 <a-camera position="0 -1 0"></a-camera>
                 <a-entity id="rhand" hand-tracking-grab-controls="hand: right;">
-                  <a-entity id="rhand-laser" laser-pointer></a-entity>
+                  <a-entity id="rhand-laser" laser-pointer position="0 0.1 0"></a-entity>
               </a-entity>
               <a-entity id="lhand" hand-tracking-grab-controls="hand: left;">
-                  <a-entity id="lhand-laser" laser-pointer></a-entity>
+                  <a-entity id="lhand-laser" laser-pointer position="0 0.1 0"></a-entity>
               </a-entity>
             </a-entity>
 
-            <script>
-              function createTeleportGrid(numRows, numCols, spacing) {
-                const gridGroup = document.createElement('a-entity');
-
-                for (let row = 0; row < numRows; row++) {
-                  for (let col = 0; col < numCols; col++) {
-                    const x = (col - (numCols - 1) / 2) * spacing;
-                    const z = (row - (numRows - 1) / 2) * spacing;
-
-                    const sphere = document.createElement('a-sphere');
-                    sphere.setAttribute('position', `${x} 0.1 ${z}`);
-                    sphere.setAttribute('radius', 0.1);
-                    sphere.setAttribute('color', '#7CFC00');
-                    sphere.setAttribute('teleport-target', '');
-
-                  gridGroup.appendChild(sphere);
-        }
-    }
-
-    return gridGroup;
-}
-              const grid = createTeleportGrid(10, 10, 0.5);
-              document.getElementById('teleport-grid').appendChild(grid);
-                AFRAME.registerComponent('custom-movement', {
-                    schema: {
-                        speed: {type: 'number', default: 0.1}
-                    },
-                    init: function () {
-                        window.addEventListener('keydown', (e) => {
-                            switch(e.key) {
-                                case 'ArrowUp':
-                                case 'w':
-                                    this.moveForward();
-                                    break;
-                                case 'ArrowDown':
-                                case 's':
-                                    this.moveBackward();
-                                    break;
-                                case 'ArrowLeft':
-                                case 'a':
-                                    this.moveLeft();
-                                    break;
-                                case 'ArrowRight':
-                                case 'd':
-                                    this.moveRight();
-                                    break;
-                            }
-                        });
-                    },
-                    moveForward: function() {
-                        const direction = new THREE.Vector3();
-                        this.el.object3D.getWorldDirection(direction);
-                        this.el.object3D.position.addScaledVector(direction, this.data.speed);
-                    },
-                    moveBackward: function() {
-                        const direction = new THREE.Vector3();
-                        this.el.object3D.getWorldDirection(direction);
-                        this.el.object3D.position.addScaledVector(direction, -this.data.speed);
-                    },
-                    moveLeft: function() {
-                        const direction = new THREE.Vector3();
-                        this.el.object3D.getWorldDirection(direction);
-                        direction.cross(this.el.object3D.up);
-                        this.el.object3D.position.addScaledVector(direction, -this.data.speed);
-                    },
-                    moveRight: function() {
-                        const direction = new THREE.Vector3();
-                        this.el.object3D.getWorldDirection(direction);
-                        direction.cross(this.el.object3D.up);
-                        this.el.object3D.position.addScaledVector(direction, this.data.speed);
-                    }
-                });
-                AFRAME.registerComponent('thumbstick-movement', {
-                    schema: {
-                        speed: {type: 'number', default: 0.05}, // Adjust speed as necessary for movement
-                        rotationSpeed: {type: 'number', default: 1.5} // Adjust speed as necessary for rotation
-                    },
-                    init: function () {
-                        this.el.addEventListener('thumbstickmoved', evt => {
-                            if (!evt.detail) return;
-
-                            let direction = new THREE.Vector3();
-                            let camEl = this.el.sceneEl.camera.el;
-
-                            // Get camera direction for forward/backward movement
-                            camEl.object3D.getWorldDirection(direction);
-                            direction.y = 0; // Ignore vertical component of the direction
-                            direction.normalize().multiplyScalar(evt.detail.y * this.data.speed);
-
-                            // Adjust for strafe movement based on thumbstick x-axis
-                            let strafeDirection = new THREE.Vector3();
-                            strafeDirection.crossVectors(direction, new THREE.Vector3(0, 1, 0)).multiplyScalar(evt.detail.x * this.data.speed);
-                            direction.add(strafeDirection);
-
-                            // Move the rig
-                            let rigEl = document.getElementById('rig');
-                            rigEl.object3D.position.add(direction);
-
-                            // Optional: Add rotation based on the x-axis of the other thumbstick
-                            // This assumes evt.detail.x is from the thumbstick designated for rotation
-                            // Adjust evt.detail.x to match the correct thumbstick input for your setup
-                            let rotation = evt.detail.x * this.data.rotationSpeed;
-                            rigEl.object3D.rotateY(THREE.Math.degToRad(rotation));
-                        });
-                    }
-                });
-                
-                AFRAME.registerComponent('teleport-target', {
-    init: function () {
-        const el = this.el;
-        const defaultColor = el.getAttribute('color');
-        const hoverColor = '#FFFF00';
-
-        el.addEventListener('raycaster-intersected', (evt) => {
-            el.setAttribute('color', hoverColor);
-        });
-
-        el.addEventListener('raycaster-intersected-cleared', (evt) => {
-            el.setAttribute('color', defaultColor);
-        });
-
-        const handControls = document.querySelectorAll('[hand-tracking-grab-controls]');
-
-        handControls.forEach(handControl => {
-            handControl.addEventListener('grip-start', () => {
-                const hand = handControl.object3D;
-                const raycaster = new THREE.Raycaster();
-                raycaster.setFromCamera(new THREE.Vector2(0, 0), handControl.el.sceneEl.camera);
-
-                const intersects = raycaster.intersectObjects([el.object3D]);
-                if (intersects.length > 0) {
-                    const rig = document.getElementById('rig');
-                    rig.object3D.position.copy(el.object3D.position);
-                }
-            });
-        });
-    }
-});
-AFRAME.registerComponent('laser-pointer', {
-    schema: {
-        color: {type: 'color', default: '#FF0000'},
-        length: {type: 'number', default: 5},
-        width: {type: 'number', default: 0.01}
-    },
-    init: function () {
-        const el = this.el;
-        const data = this.data;
-
-        el.setAttribute('line', {
-            start: '0 0 0',
-            end: `0 0 -${data.length}`,
-            color: data.color,
-            opacity: 0.7,
-            visible: false
-        });
-        el.setAttribute('raycaster', {
-            objects: '[teleport-target]',
-            far: data.length,
-            showLine: false
-        });
-
-        el.addEventListener('raycaster-intersection', (evt) => {
-            el.setAttribute('line', 'visible', true);
-        });
-
-        el.addEventListener('raycaster-intersection-cleared', (evt) => {
-            el.setAttribute('line', 'visible', false);
-        });
-    }
-});
-            </script>
+           
         </a-scene>
     </body>
 </html>
