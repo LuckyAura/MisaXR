@@ -115,33 +115,7 @@
                     }
                 });
 
-                AFRAME.registerComponent('laser-pointer', {
-                    schema: {
-                        color: {type: 'color', default: '#FF0000'},
-                        length: {type: 'number', default: 5},
-                        width: {type: 'number', default: 0.01},
-                        hand: {type: 'string', default: 'right'}
-                    },
-                    init: function () {
-                        const el = this.el;
-                        const data = this.data;
-
-                        el.setAttribute('line', {
-                            start: '0 0 0',
-                            end: `0 0 -${data.length}`,
-                            color: data.color,
-                            opacity: 1,
-                            visible: true
-                        });
-                        el.setAttribute('raycaster', {
-                            objects: '[teleport-target]',
-                            far: data.length,
-                            showLine: false
-                        });
-
-                        const handControl = document.querySelector(`[hand-tracking-controls="hand: ${data.hand}"]`);
-
-                        handControl.addEventListener('pinchstarted', () => {
+                handControl.addEventListener('pinchstarted', () => {
                             const raycaster = new THREE.Raycaster();
                             raycaster.setFromCamera(new THREE.Vector2(0, 0), el.sceneEl.camera);
 
@@ -152,9 +126,51 @@
                                 rigEl.object3D.position.copy(intersects[0].object.parent.position);
                             }
                         });
-                    }
-                });
+      
+                        AFRAME.registerComponent('laser-pointer', {
+    schema: {
+        color: {type: 'color', default: '#FF0000'},
+        length: {type: 'number', default: 5},
+        width: {type: 'number', default: 0.01},
+        hand: {type: 'string', default: 'right'}
+    },
+    init: function () {
+        const el = this.el;
+        const data = this.data;
 
+        el.setAttribute('line', {
+            start: '0 0 0',
+            end: `0 0 -${data.length}`,
+            color: data.color,
+            opacity: 1,
+            visible: true
+        });
+        el.setAttribute('raycaster', {
+            objects: '[teleport-target]',
+            far: data.length,
+            showLine: false
+        });
+
+        const handControl = document.querySelector(`[hand-tracking-controls="hand: ${data.hand}"]`);
+
+        handControl.addEventListener('pinchstarted', () => {
+            const camera = el.sceneEl.camera;
+            const handPosition = new THREE.Vector3();
+            el.object3D.getWorldPosition(handPosition);
+
+            const direction = new THREE.Vector3();
+            direction.subVectors(handPosition, camera.getWorldPosition(new THREE.Vector3())).normalize();
+
+            const raycaster = new THREE.Raycaster(handPosition, direction);
+            const intersects = raycaster.intersectObjects(el.sceneEl.querySelectorAll('[teleport-target]'), true);
+
+            if (intersects.length > 0) {
+                const rigEl = document.getElementById('rig');
+                rigEl.object3D.position.copy(intersects[0].object.parent.position);
+            }
+        });
+    }
+});
                 AFRAME.registerComponent('custom-movement', {
                     schema: {
                         speed: {type: 'number', default: 0.1}
